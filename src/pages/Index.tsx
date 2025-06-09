@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { Heart, Sparkles, Star, Gift } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Index = () => {
   const [currentShayari, setCurrentShayari] = useState(0);
@@ -78,39 +79,49 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Cleanup old messages periodically to prevent memory leaks
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      setSurpriseMessages(prev => prev.filter(msg => msg.visible));
+    }, 5000);
+
+    return () => clearInterval(cleanup);
+  }, []);
+
   const handleHeartClick = (heartId: number, event: React.MouseEvent) => {
+    // Prevent multiple clicks on the same heart
+    if (clickedHearts.includes(heartId)) return;
+
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
 
-    if (!clickedHearts.includes(heartId)) {
-      setClickedHearts(prev => [...prev, heartId]);
-      
-      const newMessage = {
-        id: Date.now(),
-        message: surpriseMessagesList[messageIndex % surpriseMessagesList.length],
-        x: x,
-        y: y,
-        visible: true
-      };
+    setClickedHearts(prev => [...prev, heartId]);
+    
+    const newMessage = {
+      id: Date.now(),
+      message: surpriseMessagesList[messageIndex % surpriseMessagesList.length],
+      x: x,
+      y: y,
+      visible: true
+    };
 
-      setSurpriseMessages(prev => [...prev, newMessage]);
-      setMessageIndex(prev => prev + 1);
+    setSurpriseMessages(prev => [...prev, newMessage]);
+    setMessageIndex(prev => prev + 1);
 
-      // Remove message after 3 seconds
-      setTimeout(() => {
-        setSurpriseMessages(prev => 
-          prev.map(msg => 
-            msg.id === newMessage.id ? {...msg, visible: false} : msg
-          )
-        );
-      }, 3000);
+    // Remove message after 3 seconds
+    setTimeout(() => {
+      setSurpriseMessages(prev => 
+        prev.map(msg => 
+          msg.id === newMessage.id ? {...msg, visible: false} : msg
+        )
+      );
+    }, 3000);
 
-      // Clean up message after animation
-      setTimeout(() => {
-        setSurpriseMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
-      }, 3500);
-    }
+    // Clean up message after animation
+    setTimeout(() => {
+      setSurpriseMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
+    }, 3500);
   };
 
   const handleGiftClick = () => {
@@ -149,12 +160,12 @@ const Index = () => {
   return (
     <div className="min-h-screen relative overflow-hidden romantic-gradient">
       {/* Floating Hearts */}
-      {Array.from({ length: 20 }, (_, i) => (
+      {Array.from({ length: 15 }, (_, i) => (
         <FloatingHeart key={i} delay={i * 0.5} id={i} />
       ))}
       
       {/* Sparkles */}
-      {Array.from({ length: 25 }, (_, i) => (
+      {Array.from({ length: 20 }, (_, i) => (
         <SparkleElement key={i} delay={i * 0.3} />
       ))}
 
@@ -288,6 +299,9 @@ const Index = () => {
             <DialogTitle className="font-vibes text-3xl text-center text-white mb-4">
               Special Message for Sumo 💕
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              A special romantic message dialog for Sumo with heartfelt poetry and animations
+            </DialogDescription>
           </DialogHeader>
           <div className="text-center space-y-4">
             <div className="relative">
