@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Heart, Sparkles, Star, Gift } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Index = () => {
   const [currentShayari, setCurrentShayari] = useState(0);
@@ -8,6 +8,7 @@ const Index = () => {
   const [clickedHearts, setClickedHearts] = useState<number[]>([]);
   const [surpriseMessages, setSurpriseMessages] = useState<Array<{id: number, message: string, x: number, y: number, visible: boolean}>>([]);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [isGiftOpen, setIsGiftOpen] = useState(false);
 
   const shayaris = [
     {
@@ -110,6 +111,10 @@ const Index = () => {
         setSurpriseMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
       }, 3500);
     }
+  };
+
+  const handleGiftClick = () => {
+    setIsGiftOpen(true);
   };
 
   const FloatingHeart = ({ delay = 0, id }: { delay: number, id: number }) => (
@@ -234,7 +239,10 @@ const Index = () => {
 
         {/* Gift Box */}
         <div className="mb-8 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
-          <div className="relative group cursor-pointer">
+          <div 
+            className="relative group cursor-pointer"
+            onClick={handleGiftClick}
+          >
             <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 hover:bg-white/25 transition-all duration-300 group-hover:scale-105">
               <Gift className="w-12 h-12 text-yellow-300 mx-auto animate-float group-hover:animate-bounce" />
               <p className="font-poppins text-white text-center mt-2 text-sm">
@@ -272,6 +280,43 @@ const Index = () => {
           </p>
         </div>
       </div>
+
+      {/* Gift Dialog */}
+      <Dialog open={isGiftOpen} onOpenChange={setIsGiftOpen}>
+        <DialogContent className="romantic-gradient border-white/20 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-vibes text-3xl text-center text-white mb-4">
+              Special Message for Sumo 💕
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <Heart className="w-16 h-16 text-romantic-300 mx-auto animate-pulse-heart fill-current" />
+              <Sparkles className="w-6 h-6 text-yellow-300 absolute -top-2 -right-2 animate-sparkle" />
+            </div>
+            <div className="space-y-3">
+              <p className="font-dancing text-xl text-white/90">
+                "Sumo, tu kitni special hai, ye words mein express karna mushkil hai"
+              </p>
+              <p className="font-dancing text-xl text-white/90">
+                "Tere smile se meri duniya roshan ho jaati hai"
+              </p>
+              <p className="font-dancing text-xl text-white/90">
+                "Bas itna kehna chahta hun - tu amazing hai! ✨"
+              </p>
+            </div>
+            <div className="flex justify-center gap-2 mt-6">
+              {Array.from({ length: 5 }, (_, i) => (
+                <Heart 
+                  key={i} 
+                  className="w-4 h-4 text-romantic-300 fill-current animate-pulse-heart"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
