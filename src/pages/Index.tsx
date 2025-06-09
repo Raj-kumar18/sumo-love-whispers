@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Heart, Sparkles, Star, Gift } from "lucide-react";
+import { Heart, Sparkles, Star, Camera, Image } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Index = () => {
@@ -9,7 +8,8 @@ const Index = () => {
   const [clickedHearts, setClickedHearts] = useState<number[]>([]);
   const [surpriseMessages, setSurpriseMessages] = useState<Array<{id: number, message: string, x: number, y: number, visible: boolean}>>([]);
   const [messageIndex, setMessageIndex] = useState(0);
-  const [isGiftOpen, setIsGiftOpen] = useState(false);
+  const [isMemoryOpen, setIsMemoryOpen] = useState(false);
+  const [currentMemory, setCurrentMemory] = useState(0);
 
   const shayaris = [
     {
@@ -51,6 +51,39 @@ const Index = () => {
         "Kabhi kabhi lagta hai, dream hai ye sab",
         "Par tu real hai, and that's magical hai"
       ]
+    }
+  ];
+
+  const memories = [
+    {
+      title: "First Chat",
+      description: "When we first started talking and I knew you were special",
+      emoji: "💬",
+      message: "Remember our first conversation? Tu itni cute thi! 😊"
+    },
+    {
+      title: "Your Smile",
+      description: "The moment I realized your smile could light up my world",
+      emoji: "😊",
+      message: "Tera smile dekh kar my day automatically better ho jaata hai! ✨"
+    },
+    {
+      title: "Late Night Talks",
+      description: "Those endless conversations that made time stop",
+      emoji: "🌙",
+      message: "Late night conversations with you = pure magic! 🌟"
+    },
+    {
+      title: "Your Laugh",
+      description: "The sound that became my favorite melody",
+      emoji: "😂",
+      message: "Teri laughter sun kar lagta hai jaise music chal raha ho! 🎵"
+    },
+    {
+      title: "Special Moments",
+      description: "Every little thing that makes you uniquely you",
+      emoji: "💖",
+      message: "Tu bohot special hai Sumo, aur ye tu jaanti hai! 💝"
     }
   ];
 
@@ -124,8 +157,9 @@ const Index = () => {
     }, 3500);
   };
 
-  const handleGiftClick = () => {
-    setIsGiftOpen(true);
+  const handleMemoryClick = () => {
+    setCurrentMemory(Math.floor(Math.random() * memories.length));
+    setIsMemoryOpen(true);
   };
 
   const FloatingHeart = ({ delay = 0, id }: { delay: number, id: number }) => (
@@ -157,6 +191,26 @@ const Index = () => {
     </div>
   );
 
+  const FloatingMemoryFrame = () => (
+    <div 
+      className="fixed bottom-20 right-8 cursor-pointer group animate-float z-30"
+      onClick={handleMemoryClick}
+      style={{ animationDelay: '1s' }}
+    >
+      <div className="relative bg-gradient-to-br from-pink-400 to-purple-500 p-1 rounded-2xl shadow-2xl group-hover:scale-110 transition-all duration-300">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 w-16 h-16 flex items-center justify-center">
+          <Camera className="w-8 h-8 text-purple-600 group-hover:animate-bounce" />
+        </div>
+        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
+          {memories.length}
+        </div>
+      </div>
+      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        Special Memories 📸
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen relative overflow-hidden romantic-gradient">
       {/* Floating Hearts */}
@@ -168,6 +222,9 @@ const Index = () => {
       {Array.from({ length: 20 }, (_, i) => (
         <SparkleElement key={i} delay={i * 0.3} />
       ))}
+
+      {/* Floating Memory Frame */}
+      <FloatingMemoryFrame />
 
       {/* Surprise Messages */}
       {surpriseMessages.map((msg) => (
@@ -210,8 +267,8 @@ const Index = () => {
           <div className="bg-white/10 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20">
             <p className="font-poppins text-white/90 text-sm flex items-center gap-2 justify-center">
               <Heart className="w-4 h-4 fill-current text-romantic-300 animate-pulse-heart" />
-              Click on the floating hearts for surprises!
-              <Heart className="w-4 h-4 fill-current text-romantic-300 animate-pulse-heart" />
+              Click on hearts for surprises & check the memory frame!
+              <Camera className="w-4 h-4 text-purple-300 animate-bounce" />
             </p>
           </div>
         </div>
@@ -248,21 +305,6 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Gift Box */}
-        <div className="mb-8 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
-          <div 
-            className="relative group cursor-pointer"
-            onClick={handleGiftClick}
-          >
-            <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 hover:bg-white/25 transition-all duration-300 group-hover:scale-105">
-              <Gift className="w-12 h-12 text-yellow-300 mx-auto animate-float group-hover:animate-bounce" />
-              <p className="font-poppins text-white text-center mt-2 text-sm">
-                Special surprise box! 🎁
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Message */}
         <div className="text-center animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
           <p className="font-poppins text-lg md:text-xl text-white/90 max-w-xl mx-auto leading-relaxed">
@@ -287,36 +329,35 @@ const Index = () => {
         {/* Stats */}
         <div className="mt-8 text-center animate-fadeInUp" style={{ animationDelay: '1s' }}>
           <p className="font-poppins text-white/70 text-sm">
-            Hearts clicked: {clickedHearts.length} | Messages revealed: {messageIndex}
+            Hearts clicked: {clickedHearts.length} | Messages revealed: {messageIndex} | Memories: {memories.length}
           </p>
         </div>
       </div>
 
-      {/* Gift Dialog */}
-      <Dialog open={isGiftOpen} onOpenChange={setIsGiftOpen}>
+      {/* Memory Dialog */}
+      <Dialog open={isMemoryOpen} onOpenChange={setIsMemoryOpen}>
         <DialogContent className="romantic-gradient border-white/20 text-white max-w-md">
           <DialogHeader>
             <DialogTitle className="font-vibes text-3xl text-center text-white mb-4">
-              Special Message for Sumo 💕
+              {memories[currentMemory]?.title} {memories[currentMemory]?.emoji}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              A special romantic message dialog for Sumo with heartfelt poetry and animations
+              A special memory dialog showing precious moments and thoughts
             </DialogDescription>
           </DialogHeader>
           <div className="text-center space-y-4">
             <div className="relative">
-              <Heart className="w-16 h-16 text-romantic-300 mx-auto animate-pulse-heart fill-current" />
-              <Sparkles className="w-6 h-6 text-yellow-300 absolute -top-2 -right-2 animate-sparkle" />
+              <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full mx-auto flex items-center justify-center text-4xl animate-pulse-heart">
+                {memories[currentMemory]?.emoji}
+              </div>
+              <Sparkles className="w-6 h-6 text-yellow-300 absolute -top-2 -right-6 animate-sparkle" />
             </div>
             <div className="space-y-3">
-              <p className="font-dancing text-xl text-white/90">
-                "Sumo, tu kitni special hai, ye words mein express karna mushkil hai"
+              <p className="font-poppins text-white/80 text-sm italic">
+                {memories[currentMemory]?.description}
               </p>
               <p className="font-dancing text-xl text-white/90">
-                "Tere smile se meri duniya roshan ho jaati hai"
-              </p>
-              <p className="font-dancing text-xl text-white/90">
-                "Bas itna kehna chahta hun - tu amazing hai! ✨"
+                {memories[currentMemory]?.message}
               </p>
             </div>
             <div className="flex justify-center gap-2 mt-6">
@@ -328,6 +369,14 @@ const Index = () => {
                 />
               ))}
             </div>
+            <button
+              onClick={() => {
+                setCurrentMemory((prev) => (prev + 1) % memories.length);
+              }}
+              className="mt-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full transition-all duration-200 font-poppins text-sm"
+            >
+              Next Memory ➡️
+            </button>
           </div>
         </DialogContent>
       </Dialog>
