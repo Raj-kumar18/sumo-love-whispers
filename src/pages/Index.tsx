@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { Heart, Sparkles, Star, Camera } from "lucide-react";
+import { Heart, Sparkles, Star, Camera, Quote } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Index = () => {
   const [currentShayari, setCurrentShayari] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [clickedHearts, setClickedHearts] = useState<number[]>([]);
-  const [surpriseMessages, setSurpriseMessages] = useState<Array<{id: number, message: string, x: number, y: number, visible: boolean}>>([]);
-  const [messageIndex, setMessageIndex] = useState(0);
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [currentMemory, setCurrentMemory] = useState(0);
+  const [showQuoteBox, setShowQuoteBox] = useState(false);
+  const [currentQuote, setCurrentQuote] = useState(0);
+  const [totalQuotesShown, setTotalQuotesShown] = useState(0);
 
   const shayaris = [
     {
@@ -87,17 +88,17 @@ const Index = () => {
     }
   ];
 
-  const surpriseMessagesList = [
-    "Tu bahut cute hai! 💕",
-    "Your smile lights up my day ✨",
-    "Sumo = Super Awesome! 🌟",
-    "You're absolutely wonderful! 💖",
-    "Tu meri favorite hai! 😊",
-    "Your laugh is music! 🎵",
-    "You make everything better! 🌈",
-    "Sumo, you're amazing! 💫",
-    "You're pure magic! ✨",
-    "Tu bohot special hai! 💝"
+  const romanticQuotes = [
+    "Tu meri zindagi ka sabse khoobsurat hissa hai 💕",
+    "Tere saath har lamha special lagta hai ✨",
+    "Sumo, tu mere dil ki rani hai 👑",
+    "Tera pyaar hi meri sabse badi khushi hai 💖",
+    "Tu mere sapno ki malka hai 🌙",
+    "Tere bina ye duniya incomplete hai 🌍",
+    "Tu meri favorite person hai, always! 😊",
+    "Tera smile dekh kar dil garden garden ho jaata hai 🌸",
+    "Tu mere liye perfect hai, bilkul perfect! 💯",
+    "Tere saath time fly ho jaata hai ⏰"
   ];
 
   // Shayari auto-rotation
@@ -113,50 +114,20 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [shayaris.length]);
 
-  // Cleanup old messages to prevent memory leaks
-  useEffect(() => {
-    const cleanup = setInterval(() => {
-      setSurpriseMessages(prev => prev.filter(msg => msg.visible));
-    }, 10000);
-
-    return () => clearInterval(cleanup);
-  }, []);
-
-  const handleHeartClick = useCallback((heartId: number, event: React.MouseEvent) => {
+  const handleHeartClick = useCallback((heartId: number) => {
     // Prevent multiple clicks on the same heart
     if (clickedHearts.includes(heartId)) return;
 
-    const rect = (event.target as HTMLElement).getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-
     setClickedHearts(prev => [...prev, heartId]);
-    
-    const newMessage = {
-      id: Date.now() + Math.random(),
-      message: surpriseMessagesList[messageIndex % surpriseMessagesList.length],
-      x: x,
-      y: y,
-      visible: true
-    };
+    setCurrentQuote(totalQuotesShown % romanticQuotes.length);
+    setTotalQuotesShown(prev => prev + 1);
+    setShowQuoteBox(true);
 
-    setSurpriseMessages(prev => [...prev, newMessage]);
-    setMessageIndex(prev => prev + 1);
-
-    // Remove message after 3 seconds
+    // Hide quote after 4 seconds
     setTimeout(() => {
-      setSurpriseMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id ? {...msg, visible: false} : msg
-        )
-      );
-    }, 3000);
-
-    // Clean up message after animation
-    setTimeout(() => {
-      setSurpriseMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
-    }, 3500);
-  }, [clickedHearts, messageIndex, surpriseMessagesList]);
+      setShowQuoteBox(false);
+    }, 4000);
+  }, [clickedHearts, totalQuotesShown, romanticQuotes.length]);
 
   const handleMemoryClick = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * memories.length);
@@ -182,7 +153,7 @@ const Index = () => {
         left: `${Math.random() * 80 + 10}%`,
         top: `${Math.random() * 80 + 10}%`
       }}
-      onClick={(e) => handleHeartClick(id, e)}
+      onClick={() => handleHeartClick(id)}
     >
       <Heart className="w-8 h-8 fill-current hover:drop-shadow-lg" />
     </div>
@@ -221,6 +192,32 @@ const Index = () => {
     </div>
   );
 
+  const FloatingQuoteBox = () => (
+    <div 
+      className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-500 ${
+        showQuoteBox ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
+      }`}
+    >
+      <div className="bg-gradient-to-br from-pink-400/95 to-purple-500/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/30 max-w-md mx-4">
+        <div className="text-center">
+          <Quote className="w-12 h-12 text-white/80 mx-auto mb-4 animate-pulse-heart" />
+          <p className="font-dancing text-2xl text-white leading-relaxed mb-4">
+            {romanticQuotes[currentQuote]}
+          </p>
+          <div className="flex justify-center gap-1">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Heart 
+                key={i} 
+                className="w-4 h-4 text-white/70 fill-current animate-pulse-heart"
+                style={{ animationDelay: `${i * 0.2}s` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen relative overflow-hidden romantic-gradient">
       {/* Floating Hearts - Reduced count */}
@@ -236,26 +233,8 @@ const Index = () => {
       {/* Floating Memory Frame */}
       <FloatingMemoryFrame />
 
-      {/* Surprise Messages */}
-      {surpriseMessages.map((msg) => (
-        <div
-          key={msg.id}
-          className={`fixed z-50 pointer-events-none transition-all duration-500 ${
-            msg.visible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-          }`}
-          style={{
-            left: `${msg.x}px`,
-            top: `${msg.y}px`,
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border-2 border-romantic-300 animate-bounce">
-            <p className="font-poppins text-romantic-700 font-semibold text-sm whitespace-nowrap">
-              {msg.message}
-            </p>
-          </div>
-        </div>
-      ))}
+      {/* Floating Quote Box */}
+      <FloatingQuoteBox />
 
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
         {/* Header */}
@@ -277,7 +256,7 @@ const Index = () => {
           <div className="bg-white/10 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20">
             <p className="font-poppins text-white/90 text-sm flex items-center gap-2 justify-center">
               <Heart className="w-4 h-4 fill-current text-romantic-300 animate-pulse-heart" />
-              Click on hearts for surprises & check the memory frame!
+              Click hearts for romantic quotes & check the memory frame!
               <Camera className="w-4 h-4 text-purple-300 animate-bounce" />
             </p>
           </div>
@@ -331,7 +310,7 @@ const Index = () => {
               key={i + 100} 
               className="w-6 h-6 text-romantic-300 fill-current animate-pulse-heart cursor-pointer hover:scale-125 transition-transform duration-200"
               style={{ animationDelay: `${i * 0.2}s` }}
-              onClick={(e) => handleHeartClick(i + 100, e)}
+              onClick={() => handleHeartClick(i + 100)}
             />
           ))}
         </div>
@@ -339,7 +318,7 @@ const Index = () => {
         {/* Stats */}
         <div className="mt-8 text-center animate-fadeInUp" style={{ animationDelay: '1s' }}>
           <p className="font-poppins text-white/70 text-sm">
-            Hearts clicked: {clickedHearts.length} | Messages revealed: {messageIndex} | Memories: {memories.length}
+            Hearts clicked: {clickedHearts.length} | Quotes revealed: {totalQuotesShown} | Memories: {memories.length}
           </p>
         </div>
       </div>
