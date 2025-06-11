@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Heart, Sparkles, Star, Camera, Image } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Heart, Sparkles, Star, Camera } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Index = () => {
@@ -100,6 +100,7 @@ const Index = () => {
     "Tu bohot special hai! 💝"
   ];
 
+  // Shayari auto-rotation
   useEffect(() => {
     const interval = setInterval(() => {
       setIsVisible(false);
@@ -110,18 +111,18 @@ const Index = () => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [shayaris.length]);
 
-  // Cleanup old messages periodically to prevent memory leaks
+  // Cleanup old messages to prevent memory leaks
   useEffect(() => {
     const cleanup = setInterval(() => {
       setSurpriseMessages(prev => prev.filter(msg => msg.visible));
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(cleanup);
   }, []);
 
-  const handleHeartClick = (heartId: number, event: React.MouseEvent) => {
+  const handleHeartClick = useCallback((heartId: number, event: React.MouseEvent) => {
     // Prevent multiple clicks on the same heart
     if (clickedHearts.includes(heartId)) return;
 
@@ -132,7 +133,7 @@ const Index = () => {
     setClickedHearts(prev => [...prev, heartId]);
     
     const newMessage = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       message: surpriseMessagesList[messageIndex % surpriseMessagesList.length],
       x: x,
       y: y,
@@ -155,12 +156,21 @@ const Index = () => {
     setTimeout(() => {
       setSurpriseMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
     }, 3500);
-  };
+  }, [clickedHearts, messageIndex, surpriseMessagesList]);
 
-  const handleMemoryClick = () => {
-    setCurrentMemory(Math.floor(Math.random() * memories.length));
+  const handleMemoryClick = useCallback(() => {
+    const randomIndex = Math.floor(Math.random() * memories.length);
+    setCurrentMemory(randomIndex);
     setIsMemoryOpen(true);
-  };
+  }, [memories.length]);
+
+  const handleNextMemory = useCallback(() => {
+    setCurrentMemory((prev) => (prev + 1) % memories.length);
+  }, [memories.length]);
+
+  const handleCloseMemory = useCallback(() => {
+    setIsMemoryOpen(false);
+  }, []);
 
   const FloatingHeart = ({ delay = 0, id }: { delay: number, id: number }) => (
     <div 
@@ -213,14 +223,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden romantic-gradient">
-      {/* Floating Hearts */}
-      {Array.from({ length: 15 }, (_, i) => (
-        <FloatingHeart key={i} delay={i * 0.5} id={i} />
+      {/* Floating Hearts - Reduced count */}
+      {Array.from({ length: 8 }, (_, i) => (
+        <FloatingHeart key={i} delay={i * 0.8} id={i} />
       ))}
       
-      {/* Sparkles */}
-      {Array.from({ length: 20 }, (_, i) => (
-        <SparkleElement key={i} delay={i * 0.3} />
+      {/* Sparkles - Reduced count */}
+      {Array.from({ length: 12 }, (_, i) => (
+        <SparkleElement key={i} delay={i * 0.5} />
       ))}
 
       {/* Floating Memory Frame */}
@@ -335,7 +345,7 @@ const Index = () => {
       </div>
 
       {/* Memory Dialog */}
-      <Dialog open={isMemoryOpen} onOpenChange={setIsMemoryOpen}>
+      <Dialog open={isMemoryOpen} onOpenChange={handleCloseMemory}>
         <DialogContent className="romantic-gradient border-white/20 text-white max-w-md">
           <DialogHeader>
             <DialogTitle className="font-vibes text-3xl text-center text-white mb-4">
@@ -370,9 +380,7 @@ const Index = () => {
               ))}
             </div>
             <button
-              onClick={() => {
-                setCurrentMemory((prev) => (prev + 1) % memories.length);
-              }}
+              onClick={handleNextMemory}
               className="mt-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full transition-all duration-200 font-poppins text-sm"
             >
               Next Memory ➡️
