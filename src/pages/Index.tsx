@@ -1,16 +1,11 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { Heart, Sparkles, Star, Camera, Quote } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Heart, Sparkles, Star } from "lucide-react";
 
 const Index = () => {
   const [currentShayari, setCurrentShayari] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [clickedHearts, setClickedHearts] = useState<number[]>([]);
-  const [isMemoryOpen, setIsMemoryOpen] = useState(false);
-  const [currentMemory, setCurrentMemory] = useState(0);
-  const [showQuoteBox, setShowQuoteBox] = useState(false);
-  const [currentQuote, setCurrentQuote] = useState(0);
-  const [totalQuotesShown, setTotalQuotesShown] = useState(0);
 
   const shayaris = [
     {
@@ -55,52 +50,6 @@ const Index = () => {
     }
   ];
 
-  const memories = [
-    {
-      title: "First Chat",
-      description: "When we first started talking and I knew you were special",
-      emoji: "💬",
-      message: "Remember our first conversation? Tu itni cute thi! 😊"
-    },
-    {
-      title: "Your Smile",
-      description: "The moment I realized your smile could light up my world",
-      emoji: "😊",
-      message: "Tera smile dekh kar my day automatically better ho jaata hai! ✨"
-    },
-    {
-      title: "Late Night Talks",
-      description: "Those endless conversations that made time stop",
-      emoji: "🌙",
-      message: "Late night conversations with you = pure magic! 🌟"
-    },
-    {
-      title: "Your Laugh",
-      description: "The sound that became my favorite melody",
-      emoji: "😂",
-      message: "Teri laughter sun kar lagta hai jaise music chal raha ho! 🎵"
-    },
-    {
-      title: "Special Moments",
-      description: "Every little thing that makes you uniquely you",
-      emoji: "💖",
-      message: "Tu bohot special hai Sumo, aur ye tu jaanti hai! 💝"
-    }
-  ];
-
-  const romanticQuotes = [
-    "Tu meri zindagi ka sabse khoobsurat hissa hai 💕",
-    "Tere saath har lamha special lagta hai ✨",
-    "Sumo, tu mere dil ki rani hai 👑",
-    "Tera pyaar hi meri sabse badi khushi hai 💖",
-    "Tu mere sapno ki malka hai 🌙",
-    "Tere bina ye duniya incomplete hai 🌍",
-    "Tu meri favorite person hai, always! 😊",
-    "Tera smile dekh kar dil garden garden ho jaata hai 🌸",
-    "Tu mere liye perfect hai, bilkul perfect! 💯",
-    "Tere saath time fly ho jaata hai ⏰"
-  ];
-
   // Shayari auto-rotation
   useEffect(() => {
     const interval = setInterval(() => {
@@ -117,31 +66,8 @@ const Index = () => {
   const handleHeartClick = useCallback((heartId: number) => {
     // Prevent multiple clicks on the same heart
     if (clickedHearts.includes(heartId)) return;
-
     setClickedHearts(prev => [...prev, heartId]);
-    setCurrentQuote(totalQuotesShown % romanticQuotes.length);
-    setTotalQuotesShown(prev => prev + 1);
-    setShowQuoteBox(true);
-
-    // Hide quote after 4 seconds
-    setTimeout(() => {
-      setShowQuoteBox(false);
-    }, 4000);
-  }, [clickedHearts, totalQuotesShown, romanticQuotes.length]);
-
-  const handleMemoryClick = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * memories.length);
-    setCurrentMemory(randomIndex);
-    setIsMemoryOpen(true);
-  }, [memories.length]);
-
-  const handleNextMemory = useCallback(() => {
-    setCurrentMemory((prev) => (prev + 1) % memories.length);
-  }, [memories.length]);
-
-  const handleCloseMemory = useCallback(() => {
-    setIsMemoryOpen(false);
-  }, []);
+  }, [clickedHearts]);
 
   const FloatingHeart = ({ delay = 0, id }: { delay: number, id: number }) => (
     <div 
@@ -172,69 +98,17 @@ const Index = () => {
     </div>
   );
 
-  const FloatingMemoryFrame = () => (
-    <div 
-      className="fixed bottom-20 right-8 cursor-pointer group animate-float z-30"
-      onClick={handleMemoryClick}
-      style={{ animationDelay: '1s' }}
-    >
-      <div className="relative bg-gradient-to-br from-pink-400 to-purple-500 p-1 rounded-2xl shadow-2xl group-hover:scale-110 transition-all duration-300">
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 w-16 h-16 flex items-center justify-center">
-          <Camera className="w-8 h-8 text-purple-600 group-hover:animate-bounce" />
-        </div>
-        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
-          {memories.length}
-        </div>
-      </div>
-      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-        Special Memories 📸
-      </div>
-    </div>
-  );
-
-  const FloatingQuoteBox = () => (
-    <div 
-      className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-500 ${
-        showQuoteBox ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
-      }`}
-    >
-      <div className="bg-gradient-to-br from-pink-400/95 to-purple-500/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/30 max-w-md mx-4">
-        <div className="text-center">
-          <Quote className="w-12 h-12 text-white/80 mx-auto mb-4 animate-pulse-heart" />
-          <p className="font-dancing text-2xl text-white leading-relaxed mb-4">
-            {romanticQuotes[currentQuote]}
-          </p>
-          <div className="flex justify-center gap-1">
-            {Array.from({ length: 5 }, (_, i) => (
-              <Heart 
-                key={i} 
-                className="w-4 h-4 text-white/70 fill-current animate-pulse-heart"
-                style={{ animationDelay: `${i * 0.2}s` }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen relative overflow-hidden romantic-gradient">
-      {/* Floating Hearts - Reduced count */}
+      {/* Floating Hearts */}
       {Array.from({ length: 8 }, (_, i) => (
         <FloatingHeart key={i} delay={i * 0.8} id={i} />
       ))}
       
-      {/* Sparkles - Reduced count */}
+      {/* Sparkles */}
       {Array.from({ length: 12 }, (_, i) => (
         <SparkleElement key={i} delay={i * 0.5} />
       ))}
-
-      {/* Floating Memory Frame */}
-      <FloatingMemoryFrame />
-
-      {/* Floating Quote Box */}
-      <FloatingQuoteBox />
 
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
         {/* Header */}
@@ -256,8 +130,7 @@ const Index = () => {
           <div className="bg-white/10 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20">
             <p className="font-poppins text-white/90 text-sm flex items-center gap-2 justify-center">
               <Heart className="w-4 h-4 fill-current text-romantic-300 animate-pulse-heart" />
-              Click hearts for romantic quotes & check the memory frame!
-              <Camera className="w-4 h-4 text-purple-300 animate-bounce" />
+              Click hearts to collect them!
             </p>
           </div>
         </div>
@@ -318,55 +191,10 @@ const Index = () => {
         {/* Stats */}
         <div className="mt-8 text-center animate-fadeInUp" style={{ animationDelay: '1s' }}>
           <p className="font-poppins text-white/70 text-sm">
-            Hearts clicked: {clickedHearts.length} | Quotes revealed: {totalQuotesShown} | Memories: {memories.length}
+            Hearts clicked: {clickedHearts.length}
           </p>
         </div>
       </div>
-
-      {/* Memory Dialog */}
-      <Dialog open={isMemoryOpen} onOpenChange={handleCloseMemory}>
-        <DialogContent className="romantic-gradient border-white/20 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-vibes text-3xl text-center text-white mb-4">
-              {memories[currentMemory]?.title} {memories[currentMemory]?.emoji}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              A special memory dialog showing precious moments and thoughts
-            </DialogDescription>
-          </DialogHeader>
-          <div className="text-center space-y-4">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full mx-auto flex items-center justify-center text-4xl animate-pulse-heart">
-                {memories[currentMemory]?.emoji}
-              </div>
-              <Sparkles className="w-6 h-6 text-yellow-300 absolute -top-2 -right-6 animate-sparkle" />
-            </div>
-            <div className="space-y-3">
-              <p className="font-poppins text-white/80 text-sm italic">
-                {memories[currentMemory]?.description}
-              </p>
-              <p className="font-dancing text-xl text-white/90">
-                {memories[currentMemory]?.message}
-              </p>
-            </div>
-            <div className="flex justify-center gap-2 mt-6">
-              {Array.from({ length: 5 }, (_, i) => (
-                <Heart 
-                  key={i} 
-                  className="w-4 h-4 text-romantic-300 fill-current animate-pulse-heart"
-                  style={{ animationDelay: `${i * 0.2}s` }}
-                />
-              ))}
-            </div>
-            <button
-              onClick={handleNextMemory}
-              className="mt-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full transition-all duration-200 font-poppins text-sm"
-            >
-              Next Memory ➡️
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
